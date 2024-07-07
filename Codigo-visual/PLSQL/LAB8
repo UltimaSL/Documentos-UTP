@@ -1,0 +1,147 @@
+--**PARTE 1**
+
+--Crear la tabla de auditoría
+CREATE TABLE auditoria_prestamos (
+    aud_id NUMBER PRIMARY KEY,
+    aud_cliente NUMBER,
+    aud_tipo_prestamo VARCHAR2(25),
+    aud_fecha_transac TIMESTAMP,
+    aud_usuario VARCHAR2(30),
+    aud_saldo_anterior NUMBER,
+    aud_monto_aplicado NUMBER,
+    aud_saldo_actual NUMBER,
+    aud_num_prestamo NUMBER,
+    CONSTRAINT fk_auditoria_prestamo FOREIGN KEY (aud_num_prestamo) REFERENCES prestamos(num_prestamo)
+);
+
+--Crear la secuencia para la tabla de auditoría
+CREATE SEQUENCE seq_auditoria_prestamos START WITH 1 INCREMENT BY 1;
+
+--Crear el trigger para auditar la tabla prestamos
+CREATE OR REPLACE TRIGGER tr_audit_prestamos
+AFTER INSERT OR UPDATE OR DELETE ON prestamos
+FOR EACH ROW
+
+DECLARE
+    v_usuario VARCHAR2(30);
+    v_operacion VARCHAR2(10);
+
+BEGIN
+
+    --Obtener el usuario actual
+    v_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    
+    --Obtener la accion realizada
+    IF INSERTING THEN
+        v_operacion := 'INSERT';
+    ELSIF UPDATING THEN
+        v_operacion := 'UPDATE';
+    ELSIF DELETING THEN
+        v_operacion := 'DELETE';
+    END IF;
+    
+    --Insertar registro en la tabla de auditoría
+    INSERT INTO auditoria_prestamos (
+        aud_id, aud_cliente, aud_tipo_prestamo, aud_fecha_transac, 
+        aud_usuario, aud_saldo_anterior, aud_monto_aplicado, aud_saldo_actual, aud_num_prestamo
+    ) VALUES (
+        seq_auditoria_prestamos.NEXTVAL, :OLD.id_cliente, 
+        (SELECT tipo_prestamo FROM tipos_prestamos WHERE id_tipo_prestamo = :OLD.id_tipo_prestamo),
+        SYSTIMESTAMP, v_usuario, :OLD.saldo_actual, 
+        NVL(:NEW.saldo_actual, 0) - NVL(:OLD.saldo_actual, 0), NVL(:NEW.saldo_actual, 0), :OLD.num_prestamo
+    );
+END;
+/
+
+--**PARTE 2**
+
+--Crear el trigger para actualizar acumulaciones en sucursales
+CREATE OR REPLACE TRIGGER tr_update_sucursales
+AFTER INSERT OR UPDATE OR DELETE ON prestamos
+FOR EACH ROW
+DECLARE
+    v_usuario VARCHAR2(30);
+BEGIN
+    -- Obtener el usuario actual
+    v_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    
+    IF INSERTING THEN
+        UPDATE sucursal_tipo_prestamo
+        SET monto_prest_suc = monto_prest_suc + :NEW.monto_aprobado
+        WHERE id_sucursal = :NEW.id_sucursal;
+    ELSIF UPDATING THEN
+        UPDATE sucursal_tipo_prestamo
+        SET monto_prest_suc = monto_prest_suc - :OLD.monto_aprobado + :NEW.monto_aprobado
+        WHERE id_sucursal = :NEW.id_sucursal;
+    ELSIF DELETING THEN
+        UPDATE sucursal_tipo_prestamo
+        SET monto_prest_suc = monto_prest_suc - :OLD.monto_aprobado
+        WHERE id_sucursal = :OLD.id_sucursal;
+    END IF;
+END;
+/
+
+--**PARTE 3**
+
+--Crear el trigger para actualizar sucursal_tipo_prestamo
+CREATE OR REPLACE TRIGGER tr_update_suc_tipo_prest
+AFTER INSERT OR UPDATE OR DELETE ON prestamos
+FOR EACH ROW
+DECLARE
+    v_usuario VARCHAR2(30);
+BEGIN
+    -- Obtener el usuario actual
+    v_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    
+    IF INSERTING THEN
+        MERGE INTO sucursal_tipo_prestamo stp
+        USING (SELECT :NEW.id_sucursal  AS id_sucursal, :NEW.id_tipo_prestamo AS id_tipo_prestamo, :NEW.monto_aprobado AS monto FROM sucursal_tipo_prestamo) src
+        ON (stp.id_sucursal = src.id_sucursal AND stp.id_tipo_prestamo = src.id_tipo_prestamo)
+        WHEN MATCHED THEN
+            UPDATE SET stp.monto_prest_suc = stp.monto_prest_suc + src.monto
+        WHEN NOT MATCHED THEN
+            INSERT (id_sucursal, id_tipo_prestamo, monto_prest_suc)
+            VALUES (src.id_sucursal, src.id_tipo_prestamo, src.monto);
+    ELSIF UPDATING THEN
+        UPDATE sucursal_tipo_prestamo
+        SET monto_prest_suc = monto_prest_suc - :OLD.monto_aprobado + :NEW.monto_aprobado
+        WHERE id_sucursal = :NEW.id_sucursal AND id_tipo_prestamo = :NEW.id_tipo_prestamo;
+    ELSIF DELETING THEN
+        UPDATE sucursal_tipo_prestamo
+        SET monto_prest_suc = monto_prest_suc - :OLD.monto_aprobado
+        WHERE id_sucursal = :OLD.id_sucursal AND id_tipo_prestamo = :OLD.id_tipo_prestamo;
+    END IF;
+END;
+/
+
+--**PARTE 4**
+
+--Crear vista de control para verificar la auditoría de préstamos
+CREATE OR REPLACE VIEW vista_auditoria_prestamos AS
+SELECT * FROM auditoria_prestamos;
+
+
+--Crear vista de control para verificar actualizaciones en sucursales
+CREATE OR REPLACE VIEW vista_control_sucursales AS
+SELECT s.id_sucursal, s.nombre_sucursal, sp.monto_prest_suc, p.num_prestamo, p.monto_aprobado
+FROM sucursales s 
+JOIN prestamos p ON s.id_sucursal = p.id_sucursal
+JOIN sucursal_tipo_prestamo sp ON s.id_sucursal = sp.id_sucursal;
+
+
+--Crear vista de control para verificar actualizaciones en sucursal_tipo_prestamo
+CREATE OR REPLACE VIEW vista_control_suc_tipo_prest AS
+SELECT stp.id_sucursal, s.nombre_sucursal, stp.id_tipo_prestamo, tp.tipo_prestamo, stp.monto_prest_suc
+FROM sucursal_tipo_prestamo stp
+JOIN sucursales s ON stp.id_sucursal = s.id_sucursal
+JOIN tipos_prestamos tp ON stp.id_tipo_prestamo = tp.id_tipo_prestamo;
+
+
+
+--Consultas para verificar las vistas de control
+
+SELECT * FROM vista_auditoria_prestamos;
+
+SELECT * FROM vista_control_sucursales;
+
+SELECT * FROM vista_control_suc_tipo_prest;

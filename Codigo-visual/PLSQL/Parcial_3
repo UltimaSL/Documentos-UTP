@@ -1,0 +1,331 @@
+CREATE TABLE auditoria (
+    aud_registro number PRIMARY KEY NOT NULL, 
+    aud_tabla varchar2(30), 
+    aud_operación varchar2(1), 
+    aud_usuario varchar2(30), 
+    aud_fecha date
+);
+
+CREATE TABLE  tipocliente (
+    tip_código number(2) PRIMARY KEY NOT NULL, 
+    tip_descripción varchar2(30)
+);
+
+CREATE TABLE clientes (
+    cli_numcliente number (8), 
+    cli_tipo number (2) CHECK(1,2,3), 
+    cli_cedula varchar2(25), 
+    cli_nombre varchar2(25), 
+    cli_apellido varchar2(25), 
+    cli_sexo varchar2(1) CHECK (FM),
+    cli_fecha_Nacimiento date,
+    CONSTRAINT FK_CLIENTE_TIPO FOREIGN KEY (cli_tipo) REFERENCES tipocliente (tip_código)
+);
+
+CREATE TABLE Tipoahorro (
+    taho_tipo number(2) PRIMARY KEY NOT NULL, 
+    taho_descripción varchar(30)
+);
+
+
+CREATE TABLE Ahorros (
+    aho_numcliente number(8), 
+    aho_tipoahorro number(2) CHECK(1,2,3), 
+    aho_cuenta number(8), 
+    aho_cuota number(15,2), 
+    aho_saldo number(15,2), 
+    aho_ahomensual number(15,2), 
+    aho_retmensual number(15,2), 
+    aho_fecha date, 
+    aho_usuario varchar2(30)
+    CONSTRAINT PK_AHORROS_CLIENTE_TIPO PRIMARY KEY (aho_numcliente, aho_tipoahorro, aho_cuenta),
+    CONSTRAINT PK_AHORROS_CLIENTE FOREIGN KEY (aho_numcliente) REFERENCES Cliente (cli_numcliente),
+    CONSTRAINT PK_AHORROS_TIPO FOREIGN KEY (aho_tipoahorro) REFERENCES Tipoahorro (taho_tipo)
+);
+
+
+
+CREATE SEQUENCE seq_cli_numcliente START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_aho_cuenta START WITH 1 INCREMENT BY 1;
+
+
+--PARTE (A)
+CREATE SEQUENCE seq_aud_registro START WITH 1 INCREMENT BY 1;
+
+
+--trigger para la tabla de auditoria que audita la tabla ahorros(B)
+CREATE TRIGGER trigger_auditoria
+AFTER INSERT OR UPDATE OR DELETE ON Ahorros 
+FOR EACH ROW
+
+DECLARE
+    v_usuario VARCHAR2(30);
+    v_operacion VARCHAR2(10);
+
+BEGIN
+
+    --Obtener el usuario actual
+    v_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    
+    --Obtener la accion realizada
+    IF INSERTING THEN
+        v_operacion := 'I';
+    ELSIF UPDATING THEN
+        v_operacion := 'U';
+    ELSIF DELETING THEN
+        v_operacion := 'De';
+    END IF;
+    
+    --Insertar registro en la tabla de auditoría
+    INSERT INTO auditoria (
+        aud_registro, 
+        aud_tabla, 
+        aud_operación, 
+        aud_usuario, 
+        aud_fecha
+        ) 
+        VALUES (
+        seq_aud_registro.NEXTVAL, 
+        'ahorros',
+        v_operacion,
+        v_usuario, 
+        SYSTIMESTAMP
+    );
+END;
+/
+
+
+
+-------------REGISTRO DE CUENTA DE AHORROS (C)-------------
+
+CREATE OR REPLACE PROCEDURE insertar_registros_ahorros (
+    p_cli_numcliente NUMBER, 
+    p_tip_ahorro NUMBER,  
+    p_Saldo NUMBER, 
+    p_ahomensual NUMBER, 
+    p_retmensual NUMBER
+) AS
+
+DECLARE
+
+    p_usuario varchar2(30);
+    p_tip_ahorro NUMBER(2);
+
+BEGIN
+
+    p_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+
+    DBMS_OUTPUT.PUT_LINE('Ingrese el tipo de ahorro:');
+    DBMS_OUTPUT.PUT_LINE('ingrese 1 para NAVIDAD');
+    DBMS_OUTPUT.PUT_LINE('ingrese 2 para CORRIENTE');
+    DBMS_OUTPUT.PUT_LINE('ingrese 3 para ESCOLAR');
+
+    p_tip_ahorro := '&p_tip_ahorro'
+
+
+    -- Insertar un nuevo registro en la tabla Ahorros
+    INSERT INTO Ahorros (cli_numcliente, tip_ahorro, aho_cuenta, aho_cuota, aho_saldo, aho_ahomensual, aho_retmensual, aho_fecha, aho_usuario)
+    VALUES (p_cli_numcliente, p_tip_ahorro, seq_aho_cuenta.NEXTVAL, p_Saldo, p_ahomensual, p_retmensual, SYSDATE, p_usuario);
+
+    -- Confirmar la transacción
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+END insertar_registros_ahorros;
+/
+
+-------------FIN REGISTRO DE CUENTA DE AHORROS (C)-------------
+
+
+
+-------------CURSOR PARA VALIDAD QUE EXISTE LA CUENTA DE AHORROS PARA DEPOSITAR Y RETIAR (D-E)-------------
+CREATE OR REPLACE FUNCTION dep_ret_ahorro() RETURN NUMBER IS
+    p_cuenta_ahorro NUMBER := 0; -- Inicializar la variable de existencia
+
+    CURSOR val_deposito_retiro IS
+        SELECT aho_numcliente, aho_tipahorro, aho_cuenta
+        FROM Ahorros
+        WHERE aho_numcliente = p_cli_numcliente; -- Filtrar por el cliente dado
+
+BEGIN
+    FOR pago IN val_deposito_retiro LOOP
+        IF pago.num_prestamo = p_num_prestamo THEN
+            p_cuenta_ahorro := 1; -- Establecer existencia a 1 si encontramos el préstamo
+            EXIT; -- Salir del bucle una vez que se haya encontrado el préstamo
+        END IF;
+    END LOOP;
+
+    RETURN p_cuenta_ahorro;
+END;
+/
+-------------FIN CURSOR PARA VALIDAD QUE EXISTE LA CUENTA DE AHORROS PARA DEPOSITAR Y RETIAR (D-E)-------------
+
+
+-------------DEPOSITAR EN LA CUENTA DE AHORROS (D)-------------
+CREATE OR REPLACE PROCEDURE insertar_deposito_ahorros (
+    p_cli_numcliente NUMBER, 
+    p_tip_ahorro NUMBER,
+    p_cuenta_ahorro NUMBER,  
+    p_monto NUMBER
+) AS
+
+DECLARE
+
+    p_usuario varchar2(30);
+    p_validar_deposito NUMBER := 0;
+
+BEGIN
+
+    p_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    p_validar_deposito := dep_ret_ahorro(p_cli_numcliente, p_tip_ahorro, p_cuenta_ahorro);
+
+    IF p_validar_deposito = 1 THEN
+        -- DEPOSITO en la tabla Ahorros de una cuenta corriente
+        UPDATE Ahorros SET 
+            aho_saldo = aho_saldo+p_monto,
+            aho_ahomensual = aho_ahomensual+p_monto,
+            aho_fecha= SYSDATE,
+            aho_usuario = p_usuario
+        WHERE aho_numcliente = p_cli_numcliente AND aho_tipahorro = p_tip_ahorro AND aho_cuenta = p_cuenta_ahorro;
+
+        -- Confirmar la transacción
+        COMMIT;
+
+    ELSE
+        -- Si no existe la cuenta
+        DBMS_OUTPUT.PUT_LINE('La cuenta no existe para el cliente dado.');
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+END insertar_deposito_ahorros;
+/
+-------------FIN DEPOSITAR EN LA CUENTA DE AHORROS (D)-------------
+
+
+-------------RETIRAR DE LA CUENTA DE AHORROS (E)-------------
+CREATE OR REPLACE PROCEDURE insertar_retiro_ahorros (
+    p_cli_numcliente NUMBER, 
+    p_tip_ahorro NUMBER,
+    p_cuenta_ahorro NUMBER,  
+    p_monto NUMBER
+) AS
+
+DECLARE
+
+    p_usuario varchar2(30);
+    p_validar_retiro NUMBER := 0;
+
+BEGIN
+
+    p_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    p_validar_retiro := dep_ret_ahorro(p_cli_numcliente, p_tip_ahorro, p_cuenta_ahorro);
+
+    IF p_validar_deposito = 1 THEN
+        -- RETIRO en la tabla Ahorros de una cuenta corriente
+        UPDATE Ahorros SET 
+            aho_saldo = aho_saldo-p_monto,
+            aho_ahomensual = aho_ahomensual-p_monto,
+            aho_fecha= SYSDATE,
+            aho_usuario = p_usuario
+        WHERE aho_numcliente = p_cli_numcliente AND aho_tipahorro = p_tip_ahorro AND aho_cuenta = p_cuenta_ahorro;
+
+        -- Confirmar la transacción
+        COMMIT;
+
+    ELSE
+        -- Si no existe la cuenta
+        DBMS_OUTPUT.PUT_LINE('La cuenta no existe para el cliente dado.');
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+END insertar_retiro_ahorros;
+/
+-------------FIN RETIRAR DE LA CUENTA DE AHORROS (E)-------------
+
+
+-------------CALCULAR INTERES DE LOS AHORROS CORRIENTE (F)-------------
+
+CREATE OR REPLACE FUNCTION calcular_interes (p_saldo NUMBER)
+RETURN NUMBER
+IS
+    p_interes NUMBER;
+BEGIN
+    p_interes := (((p_saldo * 0.04) * 30) / 365);
+    RETURN p_interes;
+END;
+/
+
+-------------FIN CALCULAR INTERES DE LOS AHORROS CORRIENTE (F)-------------
+
+CREATE OR REPLACE PROCEDURE actualizar_intereses () AS
+
+DECLARE
+
+    p_cuenta_ahorro NUMBER;
+    p_interes NUMBER;
+    p_saldo NUMBER;
+    p_validar_cuenta NUMBER := 0;
+    p_fecha_actual DATE := SYSDATE;
+
+BEGIN
+
+    IF p_fecha_actual = LAST_DAY(p_fecha_actual) THEN
+
+        FOR r IN (SELECT aho_cuenta FROM ahorros) LOOP
+
+            p_cuenta_ahorro := aho_cuenta;
+
+            --BUSCAR EL SALDO DEL CLIENTE
+            SELECT aho_saldo INTO p_saldo 
+            FROM ahorros 
+            WHERE aho_cuenta = p_cuenta_ahorro;
+
+            --CALCULAR INTERES DEL LA CUENTA
+            p_interes = calcular_interes(p_saldo)
+
+            --ACTUALIZAR INTERES DE LA CUENTA DE AHORROS
+            UPDATE Ahorros SET 
+                aho_saldo = aho_saldo+p_interes,
+                aho_ahomensual = aho_ahomensual+p_interes,
+                aho_fecha= SYSDATE
+            WHERE aho_numcliente = p_cli_numcliente AND aho_tipahorro = p_tip_ahorro AND aho_cuenta = p_cuenta_ahorro;
+
+            -- Confirmar la transacción
+            COMMIT;
+        END LOOP;
+
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('HOY NO ES FIN DE MES');
+
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+END actualizar_intereses;
+/
+
+
+CREATE VIEW vista_de_ahorros AS
+    SELECT 
+        a.aho_numcliente, 
+        a.aho_tipoahorro, 
+        a.aho_cuenta, 
+        a.aho_cuota, 
+        a.aho_saldo, 
+        a.aho_ahomensual, 
+        a.aho_retmensual, 
+        a.aho_fecha, 
+        a.aho_usuario
+    FROM ahorros a
+    JOIN clientes c ON a.aho_numcliente = c.cli_numcliente;

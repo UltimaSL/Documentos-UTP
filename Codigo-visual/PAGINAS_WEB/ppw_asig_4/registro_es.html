@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="assets/logo.png">
+    <title>Registro profesores</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<header></header>
+
+<body>
+    <div>
+        <div >
+            <a href="" >Inicio</a><br/>
+            <a href="" >Profesores</a><br/>
+            <a href="" >Estudiantes</a><br/>
+            <a href="" >Calendario</a><br/>
+            <a href="" >Contactanos</a>
+        </div>
+
+        <div>
+            <h1>REGISTRARSE</h1>
+            <form action="registro_es.jsp" method="post">
+            	<div>
+	            	<div >
+	                    <label for="fname">Nombre:</label>
+	                    <input type="text" id="first_name" name="fname" required><br/><br/>
+	    
+	                    <label for="lname">Apellido:</label>
+	                    <input type="text" id="last_name" name="lname" required>
+	                </div>
+	    
+	                <div>
+	                    <label for="cedula">Cedula:</label>
+	                    <input type="text" id="cedula" name="cedula" required><br/><br/>
+	                    
+	                    <label for="indice">Indice:</label>
+	                    <input type="text" id="indice" name="indice" required><br/><br/>
+	                </div>
+	                
+	                <div>
+	                	<label for="election_year_tmp">Seleccione su año lectivo:</label>
+	                	<input type="date" value="2024-03-01" min="2024-03-01" max="2030-03.01" id="election_year_tmp" name="election_year_tmp" required>
+	                </div>
+	
+	                <div >
+	                    <h3>Centro regional:</h3>
+	                    <select name="centro_rg_es" required>
+	                        <option value="Panama">Panamá</option>
+	                        <option value="Cocle">Coclé</option>
+	                        <option value="Colon">Colon</option>
+	                        <option value="Veraguas">Veraguas</option>
+	                        <option value="Los Santos">Los Santos</option>
+	                        <option value="Bocas del Toro">Bocas del Toro</option>
+	                        <option value="Chiriqui">Chiriquí</option>
+	                    </select>
+	                </div>
+	                
+	                <div>
+	                	
+	                	<h3>Cursos </h3>
+	                	
+	                	<label for=soldadura>Soldadura</label>
+	                	<input type="checkbox" id="soldadura" name="soldadura" value="soldadura">
+	                	
+	                	<label for=electronica>Electrónica</label>
+	                	<input type="checkbox" id="electronica" name="electronica" value="electronica">
+	                	
+	                	<label for=cocina>Cocina</label>
+	                	<input type="checkbox" id="cocina" name="cocina" value="cocina">
+	                	
+	                	<label for=programacion>Programación</label>
+	                	<input type="checkbox" id="programacion" name="programacion" value="programacion">
+	                
+	                </div>
+	                
+            	</div>
+
+                <div class="button-container">
+            		<input type="submit" value="Registrar">
+        		</div>
+            </form>
+        </div>
+    </div>
+</body>
+
+<footer>
+    <div>
+        <a href="index.html">Volver</a>
+    </div>
+</footer>
+
+</html>
+

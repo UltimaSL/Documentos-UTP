@@ -1,0 +1,143 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #FDF2D9;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.cabeza {
+    background-color: #FFE699; /* Color amarillo */
+    padding: 20px;
+    text-align: center;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.cuerpo {
+    display: flex;
+    flex: 1;
+    margin: 20px;
+}
+
+.opciones {
+    flex: 1;
+    background-color: #FFF;
+    padding: 20px;
+    color: white;
+}
+
+.opciones .links {
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.opciones .links:hover {
+    text-decoration: underline;
+}
+
+.registro {
+    flex: 3;
+    background-color: white;
+    padding: 20px;
+    margin-left: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.registro h1 {
+    text-align: center;
+    color: #FFCC00; /* Color amarillo */
+}
+
+.rellenado {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.data_ps {
+    flex: 1 1 calc(50% - 20px);
+    margin: 10px;
+}
+
+.data_ps label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.input_r {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.exp_virtual {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.exp_virt_1 {
+    flex: 1;
+}
+
+.exp_virt_2 {
+    flex: 1;
+    display: flex;
+    justify-content: space-around;
+}
+
+.exp_virt_2 label {
+    margin-left: 5px;
+    margin-right: 20px;
+}
+
+.button-container {
+    text-align: center;
+}
+
+.button-container input[type="submit"] {
+    background-color: #FFCC00; /* Color amarillo */
+    color: white;
+    border: none;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.footer {
+    background-color: #FFCC00;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}

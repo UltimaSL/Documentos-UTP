@@ -1,0 +1,122 @@
+.cuerpo {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+    height: 100vh; /* Asegura que el contenedor ocupe toda la altura de la ventana */
+}
+
+.links {
+  background: white;
+  padding: 3%; /* Ajusta el padding según sea necesario */
+  height: 15%; /* Establece la altura al 5% del contenedor padre */
+  width: 70%; /* Establece el ancho al 70% del contenedor padre */
+  box-sizing: border-box; /* Asegura que padding y border se incluyan en el tamaño total del elemento */
+  color: black; /* Establece el color de la letra en negro */
+}
+
+
+
+.opciones, .registro {
+	height: 40%;
+    margin: 2% 0;
+    padding: 1.25%;
+    background: gray; 
+    border-radius: 25px;
+    backdrop-filter: blur(5px);
+    border-bottom: 3px solid rgba(0, 0, 0, 0.440);
+    border-left: 2px rgba(0, 0, 0, 0.545) outset;
+}
+
+.opciones {
+    flex: 20%;
+    margin-left: 2%;
+}
+
+.registro {
+    flex: 80%;
+    margin-left: 1%;
+    margin-right: 2%;
+}
+
+.rellenado {
+    display: flex;
+    margin-left: 2%;
+}
+
+.data_ps {
+    flex: 1fr;
+    margin-right: 10%;
+}
+
+.input_r {
+	margin-right: 40%;
+    font-size: 24px; 
+}
+
+/* PARA EXPERIENCIA VIRTUAL */
+.exp_virtual {
+    display: flex;
+    justify-content: center; /* Centrando los elementos horizontalmente */
+    align-items: center; /* Alineando los elementos verticalmente */
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.exp_virt_1, .exp_virt_2 {
+    flex: 1; /* Ajusta el tamaño de los elementos */
+    margin-top: 2%;
+    display: flex;
+    justify-content: center; /* Centrando el contenido dentro de cada elemento */
+}
+
+.exp_virt_2 input[type="radio"] {
+    display: none; /* Oculta los radio buttons originales */
+}
+
+.exp_virt_2 label {
+    position: relative;
+    padding-left: 35px; /* Espacio para el pseudo-elemento */
+    display: inline-block;
+    margin-right: 30px; /* Espacio entre los labels */
+    cursor: pointer; /* Cursor pointer para indicar que es clicable */
+}
+
+.exp_virt_2 label:before {
+    content: "";
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    background-color: #fff;
+    border: 2px solid #007bff;
+    border-radius: 5px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.exp_virt_2 input[type="radio"]:checked + label:before {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* FIN PARA EXPERIENCIA VIRTUAL */
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px; /* Añade un margen superior para separar el botón del resto del formulario */
+}
+
+.cabeza {
+    background-color: gray;
+    height: 150px;
+}
+
+.footer {
+    padding: 2% 1.5%;
+    background-color: gray;
+    height: 150px;
+}
+
+

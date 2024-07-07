@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universidad del Pueblo</title>
+    <link rel="stylesheet" href="style_home.css">
+    <style>
+        /* Estilos adicionales para las imágenes */
+        .imagen-profesores img {
+            width: 500px; /* Tamaño para la imagen de Profesores */
+            height: auto;
+        }
+
+        .imagen-calendario img {
+            width: 250px; /* Tamaño para la imagen del Calendario */
+            height: auto;
+        }
+
+        .imagen-estudiantes img {
+            width: 500px; /* Tamaño para la imagen de Estudiantes */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <img src="UniversidadPueblo.png" alt="Logo de la Universidad del Pueblo" class="logo">
+            <div class="header-text">
+                <h1>UNIVERSIDAD DEL PUEBLO</h1>
+                <h2>CONSTRUIMOS EL FUTURO</h2>
+            </div>
+        </div>
+    </header>
+    <div class="main-content">
+        <nav class="menu">
+            <button class="menu-btn" onclick="toggleMenu()">☰</button>
+            <div id="menu-items">
+                <a href="home.html">Inicio</a>
+                <a href="registro_estudiantes.html">Estudiantes</a>
+                <a href="registro_profesores.html">Profesores</a>
+                <a href="calendario.html">Calendario</a>
+                <a href="soporte.html">Soporte</a>
+            </div>
+        </nav>
+        
+        <section class="imagenes">
+            <h3>Selecciona un Registro</h3>
+            <div class="imagenes-contenedor">
+                <figure class="imagen-profesores">
+                    <img src="Profesores.jpeg" alt="Profesores">
+                    <figcaption><a href="profesores.html">Registro de Profesores</a></figcaption>
+                </figure>
+                <figure class="imagen-calendario">
+                    <img src="Calendario.png" alt="Calendario">
+                    <figcaption><a href="calendario.html">Calendario</a></figcaption>
+                </figure>
+                <figure class="imagen-estudiantes">
+                    <img src="Estudiantes.jpeg" alt="Estudiantes">
+                    <figcaption><a href="soporte.html">Registro de Estudiantes</a></figcaption>
+                </figure>
+            </div>
+        </section>
+    </div>
+
+    <main>
+        <section class="noticias">
+            <h3>Noticias de otras universidades:</h3>
+            <div class="noticias-list">
+                <div class="noticia">
+                    <h4>Rector de la UTP participó de la Conferencia Final del Proyecto TETRIS</h4>
+                    <p>El Rector de la UTP, Dr. Omar Aizpurúa, participó de la Conferencia Final del Proyecto Technology Transfer Innovation Schemes (TETRIS), que es...</p>
+                    <a href="https://utp.ac.pa/rector-de-la-utp-participo-de-la-conferencia-final-del-proyecto-tetris" target="_blank">Leer más</a>
+                </div>
+                <div class="noticia">
+                    <h4>El CINEMI y la VIPE realizan seminario web sobre Energía Renovable</h4>
+                    <p>El Centro de Investigación e Innovación Eléctrica, Mecánica y de la Industria (CINEMI), de la Universidad Tecnológica de Panamá (UTP), y la...</p>
+                    <a href="https://utp.ac.pa/el-cinemi-y-la-vipe-realizan-seminario-web-sobre-energia-renovable" target="_blank">Leer más</a>
+                </div>
+                <div class="noticia">
+                    <h4>La UTP conmemora el Día del Profesional de Recursos Humanos</h4>
+                    <p>En conmemoración del Día del Profesional de Recursos Humanos (3 de junio en Panamá), se realizó el seminario "Liderazgo para la...</p>
+                    <a href="https://utp.ac.pa/la-utp-conmemora-el-dia-del-profesional-de-recursos-humanos" target="_blank">Leer más</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Universidad del Pueblo. Todos los derechos reservados.</p>
+            <p>Dirección: Calle Principal, Ciudad del Pueblo, Panama</p>
+           
+        </div>
+
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            var menuItems = document.getElementById('menu-items');
+            if (menuItems.style.display === 'block') {
+                menuItems.style.display = 'none';
+            } else {
+                menuItems.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

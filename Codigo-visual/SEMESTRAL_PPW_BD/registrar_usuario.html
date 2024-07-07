@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="assets/logo.png">
+    <title>MathUP</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="body">
+    <header class="header">
+        <a class="logo" href="home.html"><img src="assets/logo.png" alt="logo"></a>
+        <div>
+
+        </div>
+        <!-- PUEDEN COPIAR Y PERGAR DESDE AQUI HASTA LA LINEA 72 QUE ESTARA MARCADA -->
+        <div>
+            <form action="registros.jsp" method="post">
+            	<div class="" >
+
+	                <div class="">
+	                    <label for="fname">Nombre:</label>
+	                    <input type="text" id="fname" name="fname" required><br/><br/>
+                        
+                        <label for="lname">Apellido:</label>
+	                    <input type="text" id="lname" name="lname" required> 
+                        
+                        <label for="usernameUs">Nombre de usuario:</label>
+	                    <input type="text" id="usernameUs" name="usernameUs" required> 
+                        
+	                </div>
+                    <div class="">
+	                    <label for="Correo">Correo:</label>
+	                    <input type="text" id="Correo" name="Correo" required><br/><br/>
+                        
+                        <label for="Contraseña">Contraseña:</label>
+	                    <input type="text" id="Contraseña" name="Contraseña" required> 
+	                </div>
+                    <div class="">
+	                    <label for="id_admin">Administrador:</label>
+	                    <input type="text" id="id_admin" name="id_admin" required><br/><br/>
+                        
+                        <label for="id_curso">Curso:</label>
+	                    <input type="text" id="id_curso" name="id_curso" required> 
+	                </div>
+
+                    <div>
+                        <label for="fecha_de_nacimiento">Fecha de nacimiento:</label>
+	                	<input type="date" value="2024-03-01" min="1924-03-01" max="2004-07-07" id="fecha_de_nacimiento" name="fecha_de_nacimiento" required>
+                    </div>
+
+                    <div class="">
+	                    <label for="numDeptAdm">Departamento:</label>
+	                    <input type="text" id="numDeptAdm" name="numDeptAdm" required><br/><br/>
+	                </div>
+
+                    <div class="">
+                        <select name="centro_rg_es" required>
+	                        <option value="1">Matematicas</option>
+	                        <option value="2">Fisica</option>
+	                        <option value="3">Programacion</option>
+	                    </select>
+                    </div>
+	
+            	</div>
+
+                <div class="button-container">
+            		<input type="submit" value="Login">
+        		</div>
+            </form>
+        </div>
+        <!-- HASTA ESTA LINEA -->
+    </header>
+
+
+    <footer class="footer">
+        <div class="footer_columna">
+            <h4>MathUP</h4>
+            <ul>
+                <li><a href="home.html">Inicio</a></li>
+                <li><a href="about.html">Sobre Nosotros</a></li>
+            </ul>
+        </div>
+        <div class="footer_columna">
+            <h4>Derechos Reservados</h4>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus esse magnam quis mollitia temporibus blanditiis, quia aliquid rerum sint exercitationem reiciendis nisi placeat itaque fuga dignissimos ipsam accusantium quasi officiis.</p>
+        </div>
+        <div class="footer_columna">
+            <h4>Perfil</h4>
+            <ul>
+                <li><a href="home.html">Gestionar Perfil</a></li>
+                <li><a href="sport.html">Log Out</a></li>
+            </ul>
+        </div>
+    </footer>
+</body>
+</html>

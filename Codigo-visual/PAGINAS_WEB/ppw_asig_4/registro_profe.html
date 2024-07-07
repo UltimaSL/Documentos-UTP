@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="assets/logo.png">
+    <title>Registro profesores</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<header class="cabeza"></header>
+
+<body>
+    <div class="cuerpo">
+        <div class="opciones">
+            <a href="" class="links">Inicio</a><br/><br/><br/>
+            <a href="" class="links">Profesores</a><br/><br/><br/>
+            <a href="" class="links">Estudiantes</a><br/><br/><br/>
+            <a href="" class="links">Calendario</a><br/><br/><br/>
+            <a href="" class="links">Contactanos</a>
+        </div>
+
+        <div class="registro">
+            <h1>REGISTRARSE</h1>
+            <form action="registro.jsp" method="post">
+            	<div class="rellenado" >
+	            	<div class="data_ps">
+	                    <label for="fname">Nombre:</label>
+	                    <input type="text" id="first_name" name="fname" class="input_r" required><br/><br/>
+	    
+	                    <label for="lname">Apellido:</label>
+	                    <input type="text" id="last_name" name="lname" class="input_r" required>
+	                </div>
+	    
+	                <div class="data_ps">
+	                    <label for="cedula">Cedula:</label>
+	                    <input type="text" id="cedula" name="cedula" class="input_r" required><br/><br/>
+	    
+	                    <label for="especialidad">Materia:</label>
+	                    <input type="text" id="especialidad" name="especialidad" class="input_r" required>
+	                </div>
+	
+	                <div class="data_ps">
+	                    <h3>Centro regional de trabajo:</h3>
+	                    <select name="centro_rg" required>
+	                        <option value="Panama">Panamá</option>
+	                        <option value="Cocle">Coclé</option>
+	                        <option value="Colon">Colon</option>
+	                        <option value="Veraguas">Veraguas</option>
+	                        <option value="Los Santos">Los Santos</option>
+	                        <option value="Bocas del Toro">Bocas del Toro</option>
+	                        <option value="Chiriqui">Chiriquí</option>
+	                    </select>
+	                </div>
+            	</div>
+                
+                <div class="exp_virtual">
+                    <div class="exp_virt_1">
+                        <h3>Experiencia en virtual</h3>
+                    </div>
+                    <div class="exp_virt_2">
+                        <input type="radio" id="SI" name="exp_virtual" value="s" required>
+                        <label for="SI">SI</label>
+                                    
+                        <input type="radio" id="NO" name="exp_virtual" value="n" required>
+                        <label for="NO">NO</label>
+                    </div>
+                </div>
+
+                <div class="button-container">
+            		<input type="submit" value="Registrar">
+        		</div>
+            </form>
+        </div>
+    </div>
+</body>
+
+<footer class="footer">
+    <div class="footer-links">
+        <a href="index.html">Volver</a>
+    </div>
+</footer>
+
+</html>
+

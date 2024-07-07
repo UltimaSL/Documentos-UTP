@@ -1,0 +1,109 @@
+<%@ page import="java.sql.*" %>
+<%@ page import="javax.sql.*" %>
+
+<%
+    // Configuración de la conexión
+    String jdbcUrl = "jdbc:oracle:thin:@localhost:1521:XE"; // Cambia a tu URL de conexión
+    String username = "tu_usuario"; // Cambia a tu usuario
+    String password = "tu_contraseña"; // Cambia a tu contraseña
+
+    Connection connection = null;
+    CallableStatement callableStatement = null;
+
+    try {
+        // Cargar el driver JDBC de Oracle
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+
+        // Establecer la conexión
+        connection = DriverManager.getConnection(jdbcUrl, username, password);
+
+
+        if(){
+                
+            //Llamar al procedimiento almacenado
+            String sql = "{call insertar_profesores(?, ?, ?, ?, ?, ?, ?, ?)}";
+            callableStatement = connection.prepareCall(sql);
+
+            // Establecer los parámetros del procedimiento almacenado
+            String nombre = "Juan";
+            String apellido = "Pérez";
+            java.sql.Date fechaNacimiento = java.sql.Date.valueOf("1980-01-15");
+            String correo = "juan.perez@example.com";
+            String contraseña = "password123";
+            int idEsp = 1;
+            int idAdmin = 2;
+            int idLeccion = 3;
+
+            //nota de backend: sirve para ingresar los valores a cada una de las varables del procedimiento almacenado
+            callableStatement.setString(1, nombre);
+            callableStatement.setString(2, apellido);
+            callableStatement.setDate(3, fechaNacimiento);
+            callableStatement.setString(4, correo);
+            callableStatement.setString(5, contraseña);
+            callableStatement.setInt(6, idEsp);
+            callableStatement.setInt(7, idAdmin);
+            callableStatement.setInt(8, idLeccion);
+
+            //nota de backend: Con esto ejecutamos el procecimiento almacenado en la base de datos
+            callableStatement.execute();
+        }
+
+        else if(){
+            // Llamar al procedimiento almacenado
+            String sql = "{call insertar_admins(?, ?, ?, ?, ?, ?)}";
+            callableStatement = connection.prepareCall(sql);
+
+            // Establecer los parámetros del procedimiento almacenado
+            String nombreAdm = "Pedro";
+            String apellidoAdm = "Gomez";
+            String fechaNacimientoAdm = java.sql.Date.valueOf("1980-01-15"); // Fecha en formato VARCHAR2
+            String nombreDeptAdm = "Recursos Humanos";
+            String correoAdm = "pedro.gomez@example.com";
+            String contraseñaAdm = "adminpassword";
+
+            //nota de backend: sirve para ingresar los valores a cada una de las varables del procedimiento almacenado
+            callableStatement.setString(1, nombreAdm);
+            callableStatement.setString(2, apellidoAdm);
+            callableStatement.setString(3, fechaNacimientoAdm);
+            callableStatement.setString(4, nombreDeptAdm);
+            callableStatement.setString(5, correoAdm);
+            callableStatement.setString(6, contraseñaAdm);
+
+            //nota de backend: Con esto ejecutamos el procecimiento almacenado en la base de datos
+            callableStatement.execute();     
+        }
+
+        else{
+            // Llamar al procedimiento almacenado
+            String sql = "{call insertar_usuarios(?, ?, ?, ?, ?, ?)}"; 
+            callableStatement = connection.prepareCall(sql);
+
+            // Establecer los parámetros del procedimiento almacenado
+            String nombreUs = "Carlos";
+            String apellidoUs = "Sanchez";
+            String usernameUs = "csanchez";
+            String correoUs = "carlos.sanchez@example.com";
+            String contraseñaUs = "userpassword";
+            int idCursoUs = 1;
+
+
+            //nota de backend: sirve para ingresar los valores a cada una de las varables del procedimiento almacenado
+            callableStatement.setString(1, nombreUs);
+            callableStatement.setString(2, apellidoUs);
+            callableStatement.setString(3, usernameUs);
+            callableStatement.setString(4, correoUs);
+            callableStatement.setString(5, contraseñaUs);
+            callableStatement.setInt(6, idCursoUs);
+
+            //nota de backend: Con esto ejecutamos el procecimiento almacenado en la base de datos
+            callableStatement.execute();
+        }
+
+
+        out.println("Procedimiento almacenado ejecutado con éxito.");
+    } catch (ClassNotFoundException e) {
+        out.println("Error al cargar el driver JDBC: " + e.getMessage()); //nota de backend: con e.getMessage obtenemos el error que se a producido
+    } catch (SQLException e) {
+        out.println("Error al ejecutar el procedimiento almacenado: " + e.getMessage());
+    }
+%>
