@@ -1,5 +1,6 @@
 import pandas as pd
 from tabulate import tabulate
+import time
 
 # Datos de la tabla de interrupciones
 i_table = [
@@ -35,7 +36,16 @@ def rellenar_tabla(interrupcion, inicio, duracion):
             prioridad = i_table[i][1]
             break  # Terminamos el bucle una vez encontramos la interrupción
 
-    tabla_procesos.append([interrupcion, prioridad, inicio, duracion, 0])
+    tabla_procesos.append([interrupcion, prioridad, inicio, duracion, 0, duracion])
+
+# Función para manejar las interrupciones durante la cuenta regresiva
+def manejar_interrupciones(tiempo_actual):
+    if tiempo_f>0:
+        for i in tabla_procesos:
+            if tabla_procesos[i][1] > 0 and tabla_procesos[i][6] != 0 and tiempo_actual == tabla_procesos[i][3]:
+                tabla_procesos[i][6] = tabla_procesos[i][6]-1
+            else:
+                tiempo_f=tiempo_f-1
 
 # Función principal
 def main():
@@ -64,7 +74,13 @@ def main():
             opcion = input("¿Desea continuar con la captura de interrupciones? (s/n): ")
             if opcion.lower() != 's':
                 ciclo2 = False
-
+        
+        # Iniciar cuenta regresiva y manejar interrupciones
+        tiempo_actual = tiempo_i
+        while tiempo_actual <= tiempo_f:
+            manejar_interrupciones(tiempo_actual)
+            tiempo_actual += 1
+        
         opcion = input("¿Desea continuar con el programa general? (s/n): ")
         if opcion.lower() != 's':
             ciclo1 = False
