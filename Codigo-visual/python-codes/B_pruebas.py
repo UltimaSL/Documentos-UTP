@@ -56,11 +56,11 @@ def generate_interrupciones(interruptions, program_duration):
                 process_queue.append((current_interruption.name, current_interruption.duration))
     
     if current_time < program_duration:
-        interrupciones.append(f"Tiempo {current_time} a {program_duration}: Programa en ejecución.")
+        interrupciones.append([current_time, program_duration])
         total_execution_time += (program_duration - current_time)
         current_time = program_duration
     
-    interrupciones.append(f"Tiempo total de ejecución: {total_execution_time} segundos.")
+    interrupciones.append([total_execution_time])
     return interrupciones, process_queue
 
 def main():

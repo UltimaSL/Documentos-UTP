@@ -23,9 +23,10 @@ def_funcs = ["Reloj del sistema",
              "Canal IDE primario(Disco)",
              "Libre(15)"]
 
-interrupciones = {irq: Interrupcion(irq, prio, func)
-                  for irq, prio, func in zip(def_irqs, def_prios, def_funcs)}
+interrupciones = {irq: Interrupcion(irq, prio, func) for irq, prio, func in zip(def_irqs, def_prios, def_funcs)}
+
 from collections import deque # lo usamos para implementar la pila de interrupciones
+
 class Ejecucion:
     def __init__(self, duracion_programa):
         self.duracion_programa = duracion_programa
@@ -97,3 +98,15 @@ class Ejecucion:
             print("T=", T, end=" ")
             T += actual[1]
             print("T=", T)
+
+
+# Prueba 1 pre armada, con lo definido
+prueba1 = Ejecucion(15)
+prueba1.anhadir_interrupcion(3, 14, 5)
+prueba1.anhadir_interrupcion(5, 9, 10)
+prueba1.anhadir_interrupcion(10, 7, 8)
+prueba1.anhadir_interrupcion(24, 14, 12)
+prueba1.anhadir_interrupcion(42, 9, 5)
+prueba1.interrupciones
+
+prueba1.ver_resultado()
