@@ -1,6 +1,5 @@
 import pandas as pd
 from tabulate import tabulate
-from collections import deque
 
 # Datos de la tabla de interrupciones
 i_table = [
@@ -45,23 +44,19 @@ def rellenar_tabla(interrupcion, inicio, duracion):
             break  # Terminamos el bucle una vez encontramos la interrupción
 
 def calcular_interrupciones(tiempo_f, tiempo_i):
-    pila = deque()
-    pila.append([16, tiempo_f, "Programa general"])
+    cola = [[16, tiempo_f, "Programa general"]]
 
-    tiempo_A = 0+tiempo_i
+    tiempo_A = 0 + tiempo_i
     i = 0
     cola_procesos = []
     Bitacora = []
 
-    while len(pila) > 0 and i < len(tabla_procesos):
-        dip = pila.pop()
+    while len(cola) > 0 and i < len(tabla_procesos):
+        dip = cola.pop()
         cola_procesos.append([dip[2], tiempo_A])
 
         i_begin = tabla_procesos[i][2]
-        prioridad = tabla_procesos[i][1]
-        nombre = tabla_procesos[i][5]
-        inicio = tabla_procesos[i][3]
-        siguiente = [prioridad, inicio, nombre]
+        p_cola = [tabla_procesos[i][1], tabla_procesos[i][3], tabla_procesos[i][5]]
         i += 1
 
         tiempo_d = i_begin - tiempo_A
@@ -78,27 +73,27 @@ def calcular_interrupciones(tiempo_f, tiempo_i):
         cola_procesos[-1].append(tiempo_A)
         Bitacora.append([dip[2], tiempo_A - tiempo_d, tiempo_A, 'Sí', dip[1]])
 
-        if siguiente[0] < dip[0]:
-            pila.append(dip)
-            pila.append(siguiente)
+        if p_cola[0] < dip[0]:
+            cola.append(dip)
+            cola.append(p_cola)
         else:
-            temp_q = deque()
-            temp_q.append(dip)
-            while pila and pila[-1][0] < siguiente[0]:
-                temp_q.append(pila.pop())
-            temp_q.append(siguiente)
-            while temp_q:
-                pila.append(temp_q.pop())
+            temporal = []
+            temporal.append(dip)
+            while cola and cola[-1][0] < p_cola[0]:
+                temporal.append(cola.pop())
+            temporal.append(p_cola)
+            while temporal:
+                cola.append(temporal.pop())
 
-    while len(pila) > 0:
-        dip = pila.pop()
+    while len(cola) > 0:
+        dip = cola.pop()
         cola_procesos.append([dip[2], tiempo_A])
         tiempo_A += dip[1]
         cola_procesos[-1].append(tiempo_A)
         Bitacora.append([dip[2], tiempo_A - dip[1], tiempo_A, 'No', 0])
 
     # Imprimir los cola_procesos en forma de tabla
-    print("\nTabla de interrupciones:")
+    print("\nCola de procesos")
     print(tabulate(cola_procesos, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final"], tablefmt='grid'))
 
     print("\nTabla de Bitacora:")
@@ -121,7 +116,7 @@ def main():
             interrupcion = int(input("Introduzca su interrupción: "))
 
             if interrupcion != 2:
-                inicio = int(input("Introduzca el inicio de la interrupción (si es menor al tiempo inicial del programa se le sumara este): "))+tiempo_i
+                inicio = int(input("Introduzca el inicio de la interrupción (si es menor al tiempo inicial del programa se le sumara este): ")) + tiempo_i
                 duracion = int(input("Introduzca la duración de la interrupción: "))
 
                 rellenar_tabla(interrupcion, inicio, duracion)
@@ -144,4 +139,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
