@@ -77,11 +77,12 @@ def calcular_interrupciones(tiempo_f, tiempo_i):
             interrupciones.insert(0, actual)
             interrupciones.insert(0, nueva_interrupcion)
         else:
-            temp = [actual]
+            temporal = []
+            temporal.append(actual)
             while interrupciones and interrupciones[0]["prioridad"] < nueva_interrupcion["prioridad"]:
-                temp.append(interrupciones.pop(0))
-            temp.append(nueva_interrupcion)
-            interrupciones = temp + interrupciones
+                temporal.append(interrupciones.pop(0))
+            temporal.append(nueva_interrupcion)
+            interrupciones = temporal + interrupciones
 
     while interrupciones:
         actual = interrupciones.pop(0)
@@ -125,14 +126,16 @@ def main():
             else:
                 print("No se puede capturar el IRQ 2 porque está reservado")
 
+
+        print("\nTabla de Procesos:")
+        print(tabulate(tabla_procesos, headers=["IRQ", "Prioridad", "Inicio", "Duración", "Final", "Función"], tablefmt='grid'))
+        
         calcular_interrupciones(tiempo_f, tiempo_i)
 
         opcion = input("\n\n¿Desea continuar con el programa general? (s/n): ")
         if opcion.lower() != 's':
             ciclo1 = False
-
-    print("\nTabla de Procesos:")
-    print(tabulate(tabla_procesos, headers=["IRQ", "Prioridad", "Inicio", "Duración", "Final", "Función"], tablefmt='grid'))
+            
     print("Programa finalizado.")
 
 if __name__ == "__main__":
