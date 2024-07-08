@@ -129,7 +129,7 @@ def main():
 
         calcular_interrupciones(tiempo_f, tiempo_i)
 
-        opcion = input("¿Desea continuar con el programa general? (s/n): ")
+        opcion = input("\n\n¿Desea continuar con el programa general? (s/n): ")
         if opcion.lower() != 's':
             ciclo1 = False
 
