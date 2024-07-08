@@ -48,35 +48,35 @@ def calcular_interrupciones(tiempo_f):
     pila = deque()
     pila.append([16, tiempo_f, "Programa general"])
 
-    T = 0
+    tiempo_A = 0
     i = 0
-    resultados = []
-    resultados_completos = []
+    cola_procesos = []
+    Bitacora = []
 
     while len(pila) > 0 and i < len(tabla_procesos):
         dip = pila.pop()
-        resultados.append([dip[2], T])
+        cola_procesos.append([dip[2], tiempo_A])
 
-        sig_T = tabla_procesos[i][2]
+        i_begin = tabla_procesos[i][2]
         prioridad = tabla_procesos[i][1]
         nombre = tabla_procesos[i][5]
         inicio = tabla_procesos[i][3]
         siguiente = [prioridad, inicio, nombre]
         i += 1
 
-        delta_T = sig_T - T
+        tiempo_d = i_begin - tiempo_A
 
-        if dip[1] - delta_T <= 0:
-            T += dip[1]
-            resultados[-1].append(T)
-            resultados_completos.append([dip[2], T - dip[1], T, 'No', 0])
+        if dip[1] - tiempo_d <= 0:
+            tiempo_A += dip[1]
+            cola_procesos[-1].append(tiempo_A)
+            Bitacora.append([dip[2], tiempo_A - dip[1], tiempo_A, 'No', 0])
             i -= 1
             continue
 
-        dip[1] -= delta_T
-        T += delta_T
-        resultados[-1].append(T)
-        resultados_completos.append([dip[2], T - delta_T, T, 'Sí', dip[1]])
+        dip[1] -= tiempo_d
+        tiempo_A += tiempo_d
+        cola_procesos[-1].append(tiempo_A)
+        Bitacora.append([dip[2], tiempo_A - tiempo_d, tiempo_A, 'Sí', dip[1]])
 
         if siguiente[0] < dip[0]:
             pila.append(dip)
@@ -92,17 +92,17 @@ def calcular_interrupciones(tiempo_f):
 
     while len(pila) > 0:
         dip = pila.pop()
-        resultados.append([dip[2], T])
-        T += dip[1]
-        resultados[-1].append(T)
-        resultados_completos.append([dip[2], T - dip[1], T, 'No', 0])
+        cola_procesos.append([dip[2], tiempo_A])
+        tiempo_A += dip[1]
+        cola_procesos[-1].append(tiempo_A)
+        Bitacora.append([dip[2], tiempo_A - dip[1], tiempo_A, 'No', 0])
 
-    # Imprimir los resultados en forma de tabla
+    # Imprimir los cola_procesos en forma de tabla
     print("\nTabla de interrupciones:")
-    print(tabulate(resultados, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final"], tablefmt='grid'))
+    print(tabulate(cola_procesos, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final"], tablefmt='grid'))
 
-    print("\nTabla de resultados completos:")
-    print(tabulate(resultados_completos, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final", "Interrupción Realizada", "Tiempo Restante"], tablefmt='grid'))
+    print("\nTabla de cola_procesos completos:")
+    print(tabulate(Bitacora, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final", "Interrupción Realizada", "Tiempo Restante"], tablefmt='grid'))
 
 # Función principal
 def main():
