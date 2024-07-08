@@ -52,7 +52,7 @@ def generate_interrupciones(interruptions, program_duration):
             if not overlap_found:
                 current_time += current_interruption.remaining_time
                 current_interruption.remaining_time = 0
-                interrupciones.append(f"Tiempo {current_interruption.start_time} a {current_time}: Interrupción '{current_interruption.name}' finalizada.")
+                interrupciones.append([current_interruption.start_time, current_time, current_interruption.name])
                 process_queue.append((current_interruption.name, current_interruption.duration))
     
     if current_time < program_duration:
