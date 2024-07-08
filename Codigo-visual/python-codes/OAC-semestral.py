@@ -18,8 +18,7 @@ i_table = [
     [12, 7, "PS-mouse"],
     [13, 8, "Co-procesador matemático"],
     [14, 9, "Canal IDE primario"],
-    [15, 9, "Libre"],
-    [16, 16, "Programa general"]
+    [15, 9, "Libre"]
 ]
 
 # Convertir la lista de interrupciones en un DataFrame de pandas
