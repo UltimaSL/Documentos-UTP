@@ -101,7 +101,7 @@ def calcular_interrupciones(tiempo_f, tiempo_i):
     print("\nTabla de interrupciones:")
     print(tabulate(cola_procesos, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final"], tablefmt='grid'))
 
-    print("\nTabla de cola_procesos completos:")
+    print("\nTabla de Bitacora:")
     print(tabulate(Bitacora, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final", "Interrupción Realizada", "Tiempo Restante"], tablefmt='grid'))
 
 # Función principal
@@ -112,7 +112,7 @@ def main():
     ciclo1 = True
     while ciclo1:
         tiempo_i = int(input("Introduzca el tiempo inicial del programa general: "))
-        tiempo_f = int(input("Introduzca el tiempo final del programa general: "))
+        tiempo_f = int(input("Introduzca la duracion del programa general: "))
 
         print(tabulate(interrupt_df, headers='keys', tablefmt='grid'))
 
