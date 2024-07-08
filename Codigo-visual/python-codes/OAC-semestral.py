@@ -1,108 +1,147 @@
-class Interrupcion:
-    def __init__(self, IRQ, prioridad, funcion):
-        self.IRQ = IRQ
-        self.prioridad = prioridad
-        self.funcion = funcion
+import pandas as pd
+from tabulate import tabulate
+from collections import deque
 
-    def __repr__(self):
-        return f"I({self.funcion})"
+# Datos de la tabla de interrupciones
+i_table = [
+    [0, 1, "Reloj de Sistema"],
+    [1, 2, "Teclado"],
+    [2, 0, "Reservada al Controlador PIC"],
+    [3, 11, "COM2 y COM4"],
+    [4, 12, "COM1 y COM3"],
+    [5, 13, "Libre"],
+    [6, 14, "Controlador Floppy"],
+    [7, 15, "Puerto Paralelo - Impresora"],
+    [8, 3, "Reloj (tics) en tiempo real CMOS"],
+    [9, 4, "Libre para tarjeta de red, sonido, puerto SCSI"],
+    [10, 5, "Libre para tarjeta de red, sonido, puerto SCSI"],
+    [11, 6, "Libre para tarjeta de red, sonido, puerto SCSI"],
+    [12, 7, "PS-mouse"],
+    [13, 8, "Co-procesador matemático"],
+    [14, 9, "Canal IDE primario"],
+    [15, 9, "Libre"],
+    [16, 16, "Programa general"]
+]
 
-def_irqs = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-def_prios = [1, 2, 11, 12, 13, 14, 15, 3, 4, 5, 6, 7, 8, 9, 10]
-def_funcs = ["Reloj del sistema", 
-             "Teclado",
-             "COM2 y COM4",
-             "COM1 y COM3",
-             "Libre(5)",
-             "Controlador Floppy - Diskette",
-             "Puerto Paralelo - Impresora",
-             "Reloj (tics) en tiempo real CMOS",
-             "Red, sonido, puerto SCSI",
-             "Libre(10)",
-             "Libre(11)",
-             "PS-mouse",
-             "Co-procesador matemático",
-             "Canal IDE primario(Disco)",
-             "Libre(15)"]
+# Convertir la lista de interrupciones en un DataFrame de pandas
+interrupt_df = pd.DataFrame(i_table, columns=["IRQ", "Prioridad", "Función"])
 
-interrupciones = {irq: Interrupcion(irq, prio, func) for irq, prio, func in zip(def_irqs, def_prios, def_funcs)}
+# Función para mostrar la tabla de interrupciones
+def display_interrupt_table(tabla_procesos):
+    print(tabulate(interrupt_df, headers='keys', tablefmt='grid'))
+    print("\nTabla de Procesos:")
+    print(tabulate(tabla_procesos, headers=["IRQ", "Prioridad", "Inicio", "Duración", "Final", "Función"], tablefmt='grid'))
 
-from collections import deque # lo usamos para implementar la pila de interrupciones
+# Función para rellenar la tabla de procesos
+def rellenar_tabla(interrupcion, inicio, duracion):
+    global tabla_procesos
+    for i in range(len(i_table)):
+        if i_table[i][0] == interrupcion:
+            prioridad = i_table[i][1]
+            funcion = i_table[i][2]
+            final = inicio + duracion
+            tabla_procesos.append([interrupcion, prioridad, inicio, duracion, final, funcion])
+            tabla_procesos.sort(key=lambda int: int[2])
+            break  # Terminamos el bucle una vez encontramos la interrupción
 
-class Ejecucion:
-    def __init__(self, duracion_programa):
-        self.duracion_programa = duracion_programa
-        self.interrupciones = [] # este es un arreglo de tuplas para manejar T's con duraciones
-    
-    def anhadir_interrupcion(self, timestamp, irq, duracion): # Añadimos las interrupciones y ordenamos
-        # Interrupciones: (Timestamp redondeado a 2 decimales | IRQ de la int. | duración (en seg.) de la int.)
-        self.interrupciones.append((round(timestamp, 2), interrupciones[irq], duracion))
-        self.interrupciones.sort(key=lambda int: int[0])
+def calcular_interrupciones(tiempo_f):
+    pila = deque()
+    pila.append([16, tiempo_f, "Programa general"])
 
-    def ver_resultado(self):
-        pila = deque() # pila: [prioridad, t_restante]
-        pila.append([999, self.duracion_programa, "Programa"])
-        
-        T = 0
-        int_index = 0
-        while len(pila) > 0 and int_index < len(self.interrupciones):
-            actual = pila.pop()
-            print(actual[2], end= " ")
-            print("T=", T, end=" ")
-            sig_T = self.interrupciones[int_index][0]
-            sig_prio = self.interrupciones[int_index][1].prioridad
-            sig_name = self.interrupciones[int_index][1].funcion
-            sig_t_res = self.interrupciones[int_index][2]
-            siguiente = [sig_prio, sig_t_res, sig_name]
-            int_index += 1
-            
-            delta_T = sig_T - T
-            
-            if actual[1] - delta_T <= 0:
-                T += actual[1]
-                print("T=", T)
-                int_index -= 1
-                continue
-            
-            actual[1] -= delta_T
-            T += delta_T
-            
-            print("T=", T)
-            
-            if siguiente[0] < actual[0]:
-                pila.append(actual)
-                pila.append(siguiente)
+    T = 0
+    i = 0
+    resultados = []
+    resultados_completos = []
+
+    while len(pila) > 0 and i < len(tabla_procesos):
+        dip = pila.pop()
+        resultados.append([dip[2], T])
+
+        sig_T = tabla_procesos[i][2]
+        prioridad = tabla_procesos[i][1]
+        nombre = tabla_procesos[i][5]
+        inicio = tabla_procesos[i][3]
+        siguiente = [prioridad, inicio, nombre]
+        i += 1
+
+        delta_T = sig_T - T
+
+        if dip[1] - delta_T <= 0:
+            T += dip[1]
+            resultados[-1].append(T)
+            resultados_completos.append([dip[2], T - dip[1], T, 'No', 0])
+            i -= 1
+            continue
+
+        dip[1] -= delta_T
+        T += delta_T
+        resultados[-1].append(T)
+        resultados_completos.append([dip[2], T - delta_T, T, 'Sí', dip[1]])
+
+        if siguiente[0] < dip[0]:
+            pila.append(dip)
+            pila.append(siguiente)
+        else:
+            temp_q = deque()
+            temp_q.append(dip)
+            while pila and pila[-1][0] < siguiente[0]:
+                temp_q.append(pila.pop())
+            temp_q.append(siguiente)
+            while temp_q:
+                pila.append(temp_q.pop())
+
+    while len(pila) > 0:
+        dip = pila.pop()
+        resultados.append([dip[2], T])
+        T += dip[1]
+        resultados[-1].append(T)
+        resultados_completos.append([dip[2], T - dip[1], T, 'No', 0])
+
+    # Imprimir los resultados en forma de tabla
+    print("\nTabla de interrupciones:")
+    print(tabulate(resultados, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final"], tablefmt='grid'))
+
+    print("\nTabla de resultados completos:")
+    print(tabulate(resultados_completos, headers=["Interrupción", "Tiempo Inicial", "Tiempo Final", "Interrupción Realizada", "Tiempo Restante"], tablefmt='grid'))
+
+# Función principal
+def main():
+    global tabla_procesos
+    tabla_procesos = []  # Inicialización de la tabla de procesos vacía
+
+    ciclo1 = True
+    while ciclo1:
+        tiempo_i = 0
+        tiempo_f = int(input("Introduzca el tiempo final del programa general: "))
+
+        print(tabulate(interrupt_df, headers='keys', tablefmt='grid'))
+
+        ciclo2 = True
+        while ciclo2:
+            interrupcion = int(input("Introduzca su interrupción: "))
+
+            if interrupcion != 2:
+                inicio = int(input("Introduzca el inicio de la interrupción: "))
+                duracion = int(input("Introduzca la duración de la interrupción: "))
+
+                rellenar_tabla(interrupcion, inicio, duracion)
+
+                opcion = input("¿Desea continuar con la captura de interrupciones? (s/n): ")
+                if opcion.lower() != 's':
+                    ciclo2 = False
             else:
-                temp_q = deque()
-                temp_q.append(actual)
-                while pila and pila[-1][0] < siguiente[0]:
-                    temp_q.append(pila.pop())
-                temp_q.append(siguiente)
-                while temp_q:
-                    pila.append(temp_q.pop())
-        
-        while len(pila) > 0:
-            actual = pila.pop()
-            print(actual[2], end= " ")
-            print("T=", T, end=" ")
-            T += actual[1]
-            print("T=", T)
+                print("No se puede capturar el IRQ 2 porque está reservado")
 
-# Permitir al usuario ingresar datos
-duracion_programa = float(input("Ingrese la duración del programa en segundos: "))
-ejecucion = Ejecucion(duracion_programa)
+        calcular_interrupciones(tiempo_f)
 
-while True:
-    try:
-        timestamp = float(input("Ingrese el timestamp de la interrupción (en segundos): "))
-        irq = int(input(f"Ingrese el IRQ de la interrupción (valores posibles: {def_irqs}): "))
-        duracion = float(input("Ingrese la duración de la interrupción (en segundos): "))
-        ejecucion.anhadir_interrupcion(timestamp, irq, duracion)
-    except ValueError:
-        print("Entrada inválida. Por favor, ingrese valores numéricos válidos.")
-    
-    otra = input("¿Desea ingresar otra interrupción? (s/n): ").strip().lower()
-    if otra != 's':
-        break
+        opcion = input("¿Desea continuar con el programa general? (s/n): ")
+        if opcion.lower() != 's':
+            ciclo1 = False
 
-ejecucion.ver_resultado()
+    print("\nTabla de Procesos:")
+    print(tabulate(tabla_procesos, headers=["IRQ", "Prioridad", "Inicio", "Duración", "Final", "Función"], tablefmt='grid'))
+    print("Programa finalizado.")
+
+if __name__ == "__main__":
+    main()
+
