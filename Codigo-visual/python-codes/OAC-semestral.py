@@ -1,6 +1,29 @@
 import pandas as pd
 from tabulate import tabulate
-import time
+
+
+class Pila:
+    def __init__(self):
+        self.items = []
+
+    def esta_vacia(self):
+        return self.items == []
+
+    def apilar(self, item):
+        self.items.append(item)
+
+    def desapilar(self):
+        if not self.esta_vacia():
+            return self.items.pop()
+
+    def ver_tope(self):
+        if not self.esta_vacia():
+            return self.items[-1]
+
+    def tamano(self):
+        return len(self.items)
+
+
 
 # Datos de la tabla de interrupciones
 i_table = [
@@ -19,8 +42,11 @@ i_table = [
     [12, 7, "PS-mouse"],
     [13, 8, "Co-procesador matemático"],
     [14, 9, "Canal IDE primario"],
-    [15, 9, "Libre"]
+    [15, 9, "Libre"],
+    [16, 16, "Programa general"]
 ]
+
+pila=Pila()
 
 # Convertir la lista de interrupciones en un DataFrame de pandas
 interrupt_df = pd.DataFrame(i_table, columns=["IRQ", "Prioridad", "Función"])
@@ -31,21 +57,28 @@ def display_interrupt_table():
 
 # Función para rellenar la tabla de procesos
 def rellenar_tabla(interrupcion, inicio, duracion):
+    global tabla_procesos
     for i in range(len(i_table)):
         if i_table[i][0] == interrupcion:
             prioridad = i_table[i][1]
+            tabla_procesos.append([interrupcion, prioridad, inicio, duracion, 0, duracion, inicio])
             break  # Terminamos el bucle una vez encontramos la interrupción
 
-    tabla_procesos.append([interrupcion, prioridad, inicio, duracion, 0, duracion])
-
 # Función para manejar las interrupciones durante la cuenta regresiva
-def manejar_interrupciones(tiempo_actual):
-    if tiempo_f>0:
-        for i in tabla_procesos:
-            if tabla_procesos[i][1] > 0 and tabla_procesos[i][6] != 0 and tiempo_actual == tabla_procesos[i][3]:
-                tabla_procesos[i][6] = tabla_procesos[i][6]-1
-            else:
-                tiempo_f=tiempo_f-1
+def manejar_interrupciones(tiempo_i, tiempo_f):
+    i=16
+    x=0
+    tiempo_A=0
+    while True:
+        for j in range(len(tabla_procesos)):
+            if j<i and tabla_procesos[j][6]>0 and tabla_procesos[j][7]>=tiempo_i:
+                pila.apilar(i)
+                i=j
+                x=1
+        
+        tabla_procesos[i][6]=tabla_procesos[i][6]-1
+        tiempo_A = tiempo_A+1
+                
 
 # Función principal
 def main():
@@ -58,29 +91,32 @@ def main():
         tiempo_i = int(input("Introduzca el tiempo inicial del programa general: "))
         tiempo_f = int(input("Introduzca el tiempo final del programa general: "))
 
+        rellenar_tabla(16, tiempo_i, tiempo_f)
+
         # Mostrar la tabla formateada
-        display_interrupt_table()
+        display_interrupt_table(tabla_procesos)
 
         # Solicitar datos para las interrupciones
         ciclo2 = True
         while ciclo2:
             interrupcion = int(input("Introduzca su interrupción: "))
-            inicio = int(input("Introduzca el inicio de la interrupción: "))
-            duracion = int(input("Introduzca la duración de la interrupción: "))
-            
-            # Llamamos a la función para rellenar la tabla de procesos
-            rellenar_tabla(interrupcion, inicio, duracion)
 
-            opcion = input("¿Desea continuar con la captura de interrupciones? (s/n): ")
-            if opcion.lower() != 's':
-                ciclo2 = False
-        
+            if interrupcion != 2:
+                inicio = int(input("Introduzca el inicio de la interrupción: "))
+                duracion = int(input("Introduzca la duración de la interrupción: "))
+
+                # Llamamos a la función para rellenar la tabla de procesos
+                rellenar_tabla(interrupcion, inicio, duracion)
+
+                opcion = input("¿Desea continuar con la captura de interrupciones? (s/n): ")
+                if opcion.lower() != 's':
+                    ciclo2 = False
+            else:
+                print("No se puede capturar el IRQ 2 porque está reservado")
+
         # Iniciar cuenta regresiva y manejar interrupciones
-        tiempo_actual = tiempo_i
-        while tiempo_actual <= tiempo_f:
-            manejar_interrupciones(tiempo_actual)
-            tiempo_actual += 1
-        
+        manejar_interrupciones(tiempo_i, tiempo_f)
+
         opcion = input("¿Desea continuar con el programa general? (s/n): ")
         if opcion.lower() != 's':
             ciclo1 = False
@@ -93,4 +129,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
