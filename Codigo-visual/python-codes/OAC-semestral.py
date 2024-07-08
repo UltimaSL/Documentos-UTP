@@ -44,11 +44,11 @@ def rellenar_tabla(interrupcion, inicio, duracion):
             tabla_procesos.sort(key=lambda int: int[2])
             break  # Terminamos el bucle una vez encontramos la interrupción
 
-def calcular_interrupciones(tiempo_f):
+def calcular_interrupciones(tiempo_f, tiempo_i):
     pila = deque()
     pila.append([16, tiempo_f, "Programa general"])
 
-    tiempo_A = 0
+    tiempo_A = 0+tiempo_i
     i = 0
     cola_procesos = []
     Bitacora = []
@@ -111,7 +111,7 @@ def main():
 
     ciclo1 = True
     while ciclo1:
-        tiempo_i = 0
+        tiempo_i = int(input("Introduzca el tiempo inicial del programa general: "))
         tiempo_f = int(input("Introduzca el tiempo final del programa general: "))
 
         print(tabulate(interrupt_df, headers='keys', tablefmt='grid'))
@@ -121,7 +121,7 @@ def main():
             interrupcion = int(input("Introduzca su interrupción: "))
 
             if interrupcion != 2:
-                inicio = int(input("Introduzca el inicio de la interrupción: "))
+                inicio = int(input("Introduzca el inicio de la interrupción (si es menor al tiempo inicial del programa se le sumara este): "))+tiempo_i
                 duracion = int(input("Introduzca la duración de la interrupción: "))
 
                 rellenar_tabla(interrupcion, inicio, duracion)
@@ -132,7 +132,7 @@ def main():
             else:
                 print("No se puede capturar el IRQ 2 porque está reservado")
 
-        calcular_interrupciones(tiempo_f)
+        calcular_interrupciones(tiempo_f, tiempo_i)
 
         opcion = input("¿Desea continuar con el programa general? (s/n): ")
         if opcion.lower() != 's':
