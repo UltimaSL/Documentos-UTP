@@ -1,30 +1,29 @@
 import numpy as np
 
-# Definición de las funciones del problema 1 en un solo array
+#problem 1
 def problema1(x):
     return np.array([x[0]**2 + x[1] - 5, np.exp(x[0]) + np.sin(x[1]) - 3])
 
-# Definición de la matriz Jacobiana del problema 1
+#problem 1 matriz jacobiana
 def m_jacobiana_p1(x):
     return np.array([[2 * x[0], 1], [np.exp(x[0]), np.cos(x[1])]])
 
-# Definición de las funciones del problema 2 en un solo array
+#problem 2
 def problema2(x):
     return np.array([x[0]**2 + x[1]**2 + x[2]**2 - 6, np.exp(x[0]) + x[1]*x[2] - 4, x[0] + x[1] + x[2] - 3])
 
-# Definición de la matriz Jacobiana del problema 2
+#problem 2 matriz jacobiana
 def m_jacobiana_p2(x):
     return np.array([[2 * x[0], 2 * x[1], 2 * x[2]], [np.exp(x[0]), x[2], x[1]], [1, 1, 1]])
 
-# Método de Newton genérico con impresión de cada iteración
 def newton_method(ecuacion, jacobian, x0, tol=1e-3, max_iter=1000):
     x = np.array(x0, dtype=float)  # Convertir la aproximación inicial a un array de tipo float
     for i in range(max_iter):
         matriz_j = jacobian(x)  #calcular la matriz Jacobiana en la x actual
         f = ecuacion(x)  #evalua todas las funciones en la x actual
-        delta = np.linalg.solve(matriz_j, -f)  # Resolver el sistema de ecuaciones lineales matriz_j * delta = -f
-        x += delta  # Actualizar la aproximación
-        error = np.linalg.norm(delta)
+        delta = np.linalg.solve(matriz_j, -f)  #resolver el sistema de ecuaciones
+        x += delta  #actualizar la aproximación
+        error = np.linalg.norm(delta) #calcular el error (btw numpy es lo maximo)
         print(f"Iteración {i + 1}: x = {x}, error = {error}")
         if error < tol:  # Comprobar si la solución ha convergido
             return x
