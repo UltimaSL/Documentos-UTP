@@ -1,112 +1,74 @@
-class Interrupcion:
-    def __init__(self, IRQ, prioridad, funcion):
-        self.IRQ = IRQ
-        self.prioridad = prioridad
-        self.funcion = funcion
-    def __repr__(self):
-        return f"I({self.funcion})"
-def_irqs = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-def_prios = [1, 2, 11, 12, 13, 14, 15, 3, 4, 5, 6, 7, 8, 9, 10]
-def_funcs = ["Reloj del sistema", 
-             "Teclado",
-             "COM2 y COM4",
-             "COM1 y COM3",
-             "Libre(5)",
-             "Controlador Floppy - Diskette",
-             "Puerto Paralelo - Impresora",
-             "Reloj (tics) en tiempo real CMOS",
-             "Red, sonido, puerto SCSI",
-             "Libre(10)",
-             "Libre(11)",
-             "PS-mouse",
-             "Co-procesador matemático",
-             "Canal IDE primario(Disco)",
-             "Libre(15)"]
+import numpy as np
 
-interrupciones = {irq: Interrupcion(irq, prio, func) for irq, prio, func in zip(def_irqs, def_prios, def_funcs)}
+# Definición de las funciones del problema 1 en un solo array
+def problema1(x):
+    return np.array([x[0]**2 + x[1] - 5, np.exp(x[0]) + np.sin(x[1]) - 3])
 
-from collections import deque # lo usamos para implementar la pila de interrupciones
+# Definición de la matriz Jacobiana del problema 1
+def m_jacobiana_p1(x):
+    return np.array([[2 * x[0], 1], [np.exp(x[0]), np.cos(x[1])]])
 
-class Ejecucion:
-    def __init__(self, duracion_programa):
-        self.duracion_programa = duracion_programa
-        self.interrupciones = [] # este es un arreglo de tuplas para manejar T's con duraciones
-        # print(self.duracion_programa)
-    
-    def anhadir_interrupcion(self, timestamp, irq, duracion): # Añadimos las interrupciones y ordenamos
-        # Interrupciones: (Timestamp redondeado a 2 decimales | IRQ de la int. | duración (en seg.) de la int.)
-        self.interrupciones.append((round(timestamp, 2), interrupciones[irq], duracion))
-        self.interrupciones.sort(key=lambda int: int[0])
+# Definición de las funciones del problema 2 en un solo array
+def problema2(x):
+    return np.array([x[0]**2 + x[1]**2 + x[2]**2 - 6, np.exp(x[0]) + x[1]*x[2] - 4, x[0] + x[1] + x[2] - 3])
 
-    def ver_resultado(self):
-        pila = deque() # pila: [prioridad, t_restante]
-        pila.append([999, self.duracion_programa, "Programa"])
+# Definición de la matriz Jacobiana del problema 2
+def m_jacobiana_p2(x):
+    return np.array([[2 * x[0], 2 * x[1], 2 * x[2]], [np.exp(x[0]), x[2], x[1]], [1, 1, 1]])
+
+# Método de Newton genérico con impresión de cada iteración
+def newton_method(ecuacion, jacobian, x0, tol=1e-3, max_iter=1000):
+    x = np.array(x0, dtype=float)  # Convertir la aproximación inicial a un array de tipo float
+    for i in range(max_iter):
+        matriz_j = jacobian(x)  #calcular la matriz Jacobiana en la x actual
+        f = ecuacion(x)  #evalua todas las funciones en la x actual
+        delta = np.linalg.solve(matriz_j, -f)  # Resolver el sistema de ecuaciones lineales matriz_j * delta = -f
+        x += delta  # Actualizar la aproximación
+        error = np.linalg.norm(delta)
+        print(f"Iteración {i + 1}: x = {x}, error = {error}")
+        if error < tol:  # Comprobar si la solución ha convergido
+            return x
+        elif error<1 and i>950:
+            print("No converge en el número máximo de iteraciones")
+            print(f"pero estos son los valore más proximos")
+            return x
+    if error>tol:
+        print("No convergió en el número máximo de iteraciones")
+
+# Menú de selección de problema
+def main():
+    ciclo = True
         
-        T = 0
-        int_index = 0
-        while len(pila) > 0 and int_index < len(self.interrupciones):
-#             print(pila)
-            actual = pila.pop()
-            print(actual[2], end= " ")
-            print("T=", T, end=" ")
-#             print(actual, "")
-            sig_T = self.interrupciones[int_index][0]
-            sig_prio = self.interrupciones[int_index][1].prioridad
-            sig_name = self.interrupciones[int_index][1].funcion
-            sig_t_res = self.interrupciones[int_index][2]
-            siguiente = [sig_prio, sig_t_res, sig_name]
-            int_index += 1
+    while ciclo:
+        problema = int(input("Elija el número de problema a resolver:"
+            "\n1 Presiona 1 para el Problema 1"
+            "\n2 Presiona 2 para el Problema 2"
+            "\n3 Presiona 3 o un nuero mayor para salir del programa\n"
+            "\nSeleccione un número: "))
             
-            delta_T = sig_T - T
-#             print("delta:", delta_T, end=" ")
+        if problema == 1:
+            ecuacion = problema1
+            jacobian = m_jacobiana_p1
+            x0 = [1.0, 1.0]
             
-            if actual[1] - delta_T <= 0:
-            #→
-                T += actual[1]
-                print("T=", T)
-                int_index -= 1
-                continue
+        elif problema == 2:
+            ecuacion = problema2
+            jacobian = m_jacobiana_p2
+            x0 = [1, 1, 2]  # Ajustar la aproximación inicial
             
-            actual[1] -= delta_T
-            #→
-            T += delta_T
-            
-            print("T=", T)
-            
-            # 1. Prio sig < actual → sig. "gana"
-            if siguiente[0] < actual[0]:
-                pila.append(actual)
-                pila.append(siguiente)
-            
-            # 2. Prio sig > actual → actual "gana"
-            if siguiente[0] > actual[0]:
-                temp_q = deque()
-                temp_q.append(actual)
-                while pila[-1][0] < siguiente[0]:
-                    temp_q.append(pila.pop())
-                temp_q.append(siguiente)
-                while temp_q:
-                    pila.append(temp_q.pop())
-#                 pila.append(siguiente)
-#                 pila.append(actual)
-            
-        
-        
-        while len(pila) > 0:
-            actual = pila.pop()
-            print(actual[2], end= " ")
-            print("T=", T, end=" ")
-            T += actual[1]
-            print("T=", T)
+        elif problema >= 3:
+            ciclo = False
+                
+        else:
+            print("Opción no válida.\n\n")
 
+        if problema == 1 or problema == 2:
+            try:
+                solucion = newton_method(ecuacion, jacobian, x0)
+                print(f"\nlos valor obtenidos son: {solucion}\n")
+            except ValueError as e:
+                print(e)
+                print("Intenta con otra aproximación inicial") #por si quiere cambiar los valores iniciales
 
-# Prueba 1 pre armada, con lo definido
-prueba1 = Ejecucion(15)
-prueba1.anhadir_interrupcion(3, 14, 5)
-prueba1.anhadir_interrupcion(5, 9, 10)
-prueba1.anhadir_interrupcion(10, 7, 8)
-prueba1.anhadir_interrupcion(24, 14, 12)
-prueba1.anhadir_interrupcion(42, 9, 5)
-prueba1.interrupciones
-
-prueba1.ver_resultado()
+if __name__ == "__main__":
+    main()
