@@ -1,0 +1,215 @@
+
+-- this is a sequence for idregistres in the "salario quincenal" Table
+CREATE SEQUENCE seq_idregistro_sal_quincenal START WITH 1 INCREMENTED BY 1;
+CREATE SEQUENCE seq_idtransaccion START WITH 1 INCREMENTED BY 1;
+
+
+-- functions for calculate "seguro educativo" and return in procedure "calcular_salario_neto" 
+CREATE OR REPLACE FUNCTION calcular_seguro_social(p_sal_bruto NUMBER) RETURN NUMBER AS
+    DECLARE
+    v_seg_educativo NUMBER
+
+    BEGIN
+    v_seg_educativo:=(0.0975*p_sal_bruto);
+
+    RETURN v_seg_educativo;
+
+END calcular_seguro_social;
+/
+
+-- Same shit but for "seguro_educativo"
+CREATE OR REPLACE FUNCTION calcular_seguro_educativo(p_sal_bruto NUMBER) RETURN NUMBER AS
+    DECLARE
+    v_seg_social NUMBER
+
+    BEGIN
+    v_seg_social:=(0.0125*p_sal_bruto);
+
+    RETURN v_seg_social;
+
+END calcular_seguro_educativo;
+/
+
+
+
+--NOW i calculare "salario_neto" and insert in "Salarioquincenal" Table 
+CREATE OR REPLACE PROCEDURE Calcular_salario_neto (
+    --i just need this variables
+    p_idempleado NUMBER,
+    p_sal_bruto NUMBER
+) AS
+
+DECLARE
+    v_usuario VARCHAR2(25)
+    v_salario_neto Salarioquincenal.sal_netoquincenal%TYPE;
+    v_seguro_social Salarioquincenal.sal_SeguroSocial%TYPE;
+    v_seguro_educativo Salarioquincenal.sal_SeguroEducativo%TYPE;
+
+BEGIN
+    v_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+
+    v_seguro_social:=calcular_seguro_educativo(p_sal_bruto);
+    v_seguro_educativo:=calcular_seguro_social(p_sal_bruto);
+
+    v_salario_neto:=p_sal_bruto-(v_seguro_educativo+v_seguro_social);
+
+    --NOW insert in "Salarioquincenal" Table
+    INSERT INTO Salarioquincenal(
+    sal_idregistros, 
+    sal_idempleado, 
+    sal_SalQuincenalBruto, 
+    sal_SeguroSocial, 
+    sal_SeguroEducativo, 
+    sal_netoquincenal, 
+    salfecha) 
+    VALUES(seq_idregistro_sal_quincenal.NEXTVAL, 
+    p_idempleado, 
+    p_sal_bruto, 
+    v_seguro_social, 
+    v_seguro_educativo, 
+    v_salario_neto, 
+    v_usuario,
+    SYSDATE
+    );
+
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+
+END;
+/
+--********************************
+
+
+CREATE OR REPLACE TRIGGER aud_Auditoria
+AFTER INSERT OR UPDATE OR DELETE ON Salarioquincenal 
+FOR EACH ROW
+
+DECLARE
+    v_usuario VARCHAR2(25);
+    v_operacion VARCHAR2(2);
+    v_id_empleado Salarioquincenal.sal_idempleado%TYPE;
+    v_SalarioBruto Salarioquincenal.sal_SalQuincenalBruto%TYPE;
+    v_SalarioNeto Salarioquincenal.sal_netoquincenal%TYPE;
+
+BEGIN
+
+    --Obtener el usuario actual
+    v_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+    
+
+IF INSERTING THEN
+        v_operacion := 'I';
+        v_id_empleado := NEW:sal_idempleado;
+        v_SalarioBruto :=NEW:sal_salquincenalbruto;
+        v_SalarioNeto := NEW:sal_netoquicenal ;
+
+    ELSIF UPDATING THEN
+        v_operacion := 'U';
+        v_id_empleado := NEW:sal_idempleado;
+        v_SalarioBruto :=NEW:sal_salquincenalbruto;
+        v_SalarioNeto := NEW:sal_netoquicenal ;
+
+    ELSIF DELETING THEN
+        v_operacion := 'De';
+        v_id_empleado := OLD:sal_idempleado;
+        v_SalarioBruto :=OLD:sal_salquincenalbruto;
+        v_SalarioNeto := OLD:sal_netoquicenal ;
+
+    END IF;
+    
+    --Insertar registro en la tabla de auditoría
+    INSERT INTO Auditoria (
+        aud_idtransaccion,
+        aud_tabla_afectada,
+        aud_tipo_operacion,
+        aud_salBrutoquincenal,
+        aud_salNetoquincenal,
+        aud_usuario,
+        aud_fecha
+        ) 
+        VALUES (
+        seq_idtransaccion.NEXTVAL,
+        'ahorros',
+        v_operacion,
+        v_id_empleado,
+        v_SalarioBruto,
+        v_SalarioNeto,
+        v_usuario,
+        SYSDATE
+    );
+END aud_Auditoria;
+/
+
+
+
+
+CREATE OR REPLACE PROCEDURE rellenar_historial()AS
+
+DECLARE
+
+    v_idRegistro Salarioquincenal.sal_idregistros%TYPE;
+    v_idEmpleado Salarioquincenal.sal_idempleado%TYPE;
+    v_salarioBruto Salarioquincenal.sal_SalQuincenalBruto%TYPE;
+    v_seguroSocial Salarioquincenal.sal_SeguroSocial%TYPE;
+    v_seguroEducativo Salarioquincenal.sal_SeguroEducativo%TYPE;
+    v_salarioNeto Salarioquincenal.sal_netoquincenal%TYPE;
+    v_usuario VARCHAR2(25);
+
+    CURSOR cur_buscar_enSalarios IS
+        SELECT sal_idregistros
+        FROM Salarioquincenal
+        WHERE sal_idregistros = v_idRegistro
+
+
+BEGIN
+    OPEN cur_buscar_enSalarios
+        FETCH cur_buscar_enSalarios INTO sal_idregistros;
+
+        WHILE cur_buscar_enSalarios%FOUND LOOP
+
+            v_usuario := SYS_CONTEXT('USERENV', 'SESSION_USER');
+        
+            SELECT 
+                sal_idregistros INTO v_idRegistro,
+                sal_idempleado INTO v_idEmpleado, 
+                sal_SalQuincenalBruto INTO v_salarioBruto, 
+                sal_SeguroSocial INTO v_seguroSocial, 
+                sal_SeguroEducativo INTO v_seguroEducativo, 
+                sal_netoquincenal INTO v_salarioNeto
+
+            FROM Salarioquincenal
+            WHERE sal_idregistros = v_idRegistro
+
+            INSERT INTO Hissalarioquincenal(
+            his_idregistro,
+            his_idempleado,
+            his_salquincenalbruto,
+            his_seguroSocial,
+            his_seguroEducativo,
+            his_salarioNeto,
+            his_fecha,
+            his_usuario
+            )
+            VALUES(
+            v_idRegistro,
+            v_idEmpleado,
+            v_salarioBruto,
+            v_seguroSocial,
+            v_seguroEducativo,
+            v_salarioNeto,
+            SYSDATE,
+            v_usuario
+            );
+
+            FETCH cur_buscar_enSalarios INTO sal_idregistros;
+        END LOOP;
+    CLOSE cur_buscar_enSalarios;
+
+COMMIT;
+END;
+/
+
