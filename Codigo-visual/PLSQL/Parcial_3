@@ -48,12 +48,17 @@ CREATE TABLE Ahorros (
 CREATE SEQUENCE seq_cli_numcliente START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_aho_cuenta START WITH 1 INCREMENT BY 1;
 
-
 --PARTE (A)
 CREATE SEQUENCE seq_aud_registro START WITH 1 INCREMENT BY 1;
 
-
 --trigger para la tabla de auditoria que audita la tabla ahorros(B)
+Alter table auditoria 
+    ADD aud_numcliente NUMBER(8),
+    ADD aud_tipoahorro NUMBER(2),
+    ADD aud_ahocuenta NUMBER(8);
+
+
+
 CREATE TRIGGER trigger_auditoria
 AFTER INSERT OR UPDATE OR DELETE ON Ahorros 
 FOR EACH ROW
@@ -61,6 +66,9 @@ FOR EACH ROW
 DECLARE
     v_usuario VARCHAR2(30);
     v_operacion VARCHAR2(10);
+    v_cliente_num NUMBER(8);
+    v_cuenta_num NUMBER(8);
+    v_tipoahorro NUMBER(2);
 
 BEGIN
 
@@ -70,10 +78,22 @@ BEGIN
     --Obtener la accion realizada
     IF INSERTING THEN
         v_operacion := 'I';
+        v_cliente_num := NEW:cli_numcliente;
+        v_cuenta_num :=NEW:taho_tipo;
+        v_tipoahorro := NEW:aho_cuenta;
+
     ELSIF UPDATING THEN
         v_operacion := 'U';
+        v_cliente_num := NEW:cli_numcliente;
+        v_cuenta_num :=NEW:taho_tipo;
+        v_tipoahorro := NEW:aho_cuenta;
+
     ELSIF DELETING THEN
         v_operacion := 'De';
+        v_cliente_num := OLD:cli_numcliente;
+        v_cuenta_num :=OLD:taho_tipo;
+        v_tipoahorro := OLD:aho_cuenta;
+
     END IF;
     
     --Insertar registro en la tabla de auditoría
@@ -81,14 +101,20 @@ BEGIN
         aud_registro, 
         aud_tabla, 
         aud_operación, 
-        aud_usuario, 
+        aud_usuario,
+        aud_numcliente, 
+        aud_tipoahorro,
+        aud_ahocuenta,
         aud_fecha
         ) 
         VALUES (
         seq_aud_registro.NEXTVAL, 
         'ahorros',
         v_operacion,
-        v_usuario, 
+        v_usuario,
+        v_cliente_num,
+        v_cuenta_num,
+        v_tipoahorro,
         SYSTIMESTAMP
     );
 END;
